@@ -11,6 +11,7 @@ function App() {
 
   const trainModel = () => {
     setInfo("Model Hazırlanıyor...");
+
     const featureExtractor = window.ml5.featureExtractor('MobileNet', () => {
       console.log('Feature extractor yüklendi.');
       const customModel = featureExtractor.classification();
@@ -36,9 +37,10 @@ function App() {
 
       const trainCustomModel = (customModel) => {
         setInfo("Model Eğitiliyor...");
+        let i = 1;
         customModel.train((lossValue) => {
           if (lossValue) {
-            console.log('Eğitim kaybı: ', lossValue);
+            console.log('Eğitim kaybı: ', lossValue, i++);
           } else {
             console.log('Eğitim tamamlandı.');
             setInfo("Eğitim Tamamlandı");
@@ -56,17 +58,18 @@ function App() {
   const handleClassifyImage = (e) => {
     if (model) {
       const image = document.getElementById('testImage');
+      const imgTest = document.getElementById('imgTest');
       const selectedFile = image.files[0];
 
       if (selectedFile) {
-        const imageElement = new Image();
-        imageElement.src = URL.createObjectURL(selectedFile);
+        imgTest.src = URL.createObjectURL(selectedFile);
 
-        imageElement.onload = function () {
-          model.classify(imageElement, (err, results) => {
+        imgTest.onload = function () {
+          model.classify(imgTest, (err, results) => {
             if (err) {
               console.error(err);
             } else {
+
               setResult(results);
             }
           });
@@ -79,21 +82,20 @@ function App() {
 
   const handleLabel = (e) => {
     setLabel({ ...label, [e.target.name]: e.target.value });
-    console.log(label)
   }
 
-  const x = (x) => {
-    setImage([...image, ...x]);
+  const loadImage = (newImage) => {
+    setImage([...image, ...newImage]);
   }
 
   return (
-    <div className='p-24 flex flex-row items-center h-full'>
+    <div className='flex flex-row items-center justify-center w-full h-full mx-24 mt-12'>
       <div className='flex flex-col mr-10'>
-        <Input name="0" setLabel={handleLabel} label={label[0]} image={x} />
-        <Input name="1" setLabel={handleLabel} label={label[1]} image={x} />
+        <Input name="0" setLabel={handleLabel} label={label[0]} image={loadImage} />
+        <Input name="1" setLabel={handleLabel} label={label[1]} image={loadImage} />
       </div>
 
-      <div className='bg-white drop-shadow-2xl mr-10 min-w-64 h-96 p-5'>
+      <div className='bg-white drop-shadow-2xl mr-10 min-w-96 rounded-lg h-96 p-5'>
         <button
           className='w-full bg-blue-600 text-white font-medium text-sm p-2 rounded'
           onClick={trainModel}>
@@ -102,7 +104,7 @@ function App() {
 
       </div>
 
-      <div className='bg-white drop-shadow-2xl min-w-64 mr-10 p-5'>
+      <div className='bg-white drop-shadow-2xl rounded-lg p-5'>
         <h2 className='text-black font-medium'>Test</h2>
         <input id="testImage" type="file" onChange={handleClassifyImage}
           className="block w-full text-sm text-gray-500
@@ -110,11 +112,11 @@ function App() {
                   file:rounded-lg file:border-0
                   file:text-sm file:font-semibold
                   file:bg-blue-600 file:text-white
-                  hover:file:bg-blue-700 "/>
+                  hover:file:bg-blue-700 mt-3 mb-5 "/>
 
+        <img id='imgTest' className='min-w-64 min-h-64 max-w-64 max-h-64' />
         {result && (
           <div>
-            <h2>Sınıflandırma Sonuçları:</h2>
             <p>{result[0].label}</p>
           </div>
         )}
